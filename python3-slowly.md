@@ -1,11 +1,8 @@
-Python 3 is not a new thing. Take a look at these release dates.
+![Slide 1](./images/Python3.001.jpeg)
 
-- Python 3.0 - December 3, 2008
-- Python 3.1 - June 27, 2009
-- Python 3.2 - February 20, 2011
-- Python 3.3 - September 29, 2012
-- Python 3.4 - March 16, 2014
-- Python 3.5 - September 13, 2015
+Python 3 is not a new thing. Just take a look at these release dates.
+
+![Slide 2](./images/Python3.002.jpeg)
 
 Even if we ignore everything before Python 3.3 (which is commonly considered
 "modern" Python 3), it's been around for over three years. I'm not here to
@@ -16,15 +13,21 @@ code is possible.
 Before I get into it though, let me introduce myself. My name is Roger López,
 and I'm a principal engineer on the tech operations team at Warby Parker.
 
+![Slide 3](./images/Python3.003.jpeg)
+
 Warby Parker, for those of you who might not be familiar with us, is a lifestyle
 brand with the lofty objective of offering designer eyewear at a revolutionary
 price, while leading the way for socially conscious business. For every pair of
 glasses sold, Warby Parker distributes a pair to someone in need.
 
+![Slide 4](./images/Python3.004.jpeg)
+
 Our engineering team builds and maintains applications that run our e-commerce
 sites, our retail stores, our customer experience suite, our supply chain and
 many other aspects of our business. These applications are the very essence of
 “mission critical”.
+
+![Slide 5](./images/Python3.005.jpeg)
 
 We have around 60 engineers, doing on average over 300 deploys a month, (or
 around 20 deploys a day). We work primarily in one repository, which has a mix
@@ -34,22 +37,21 @@ The vast majority of that code (129k lines) was written for Python 2. We've
 started building new applications and services in Python 3, and we're becoming
 really interested in migrating the Python 2. But given how much of our business
 runs on those Python 2 applications, we have to find a way to do it without
-impacting the business or disrupting the development team. So the goal is:
+impacting the business or disrupting the development team. So the goal is this:
 
-	Migrate our application to Python 3,
-	while minimzing risk and disruption.
+![Slide 7](./images/Python3.007.jpeg)
 
 So let's talk a little about software migrations in general.
 
-	mi·grate |ˈmīˌgrāt|
-	verb
-	(Computing) Change or cause to change from using one system to another.
+![Slide 8](./images/Python3.008.jpeg)
 
 I was a little surprised when I looked up the definition of "migrate", and found
 a definition related to computing. This short definition certainly captures the
 outcome of a migration, but it doesn’t speak to how migrations occur. This kind
 of overly simplistic definition makes me think of what we often call the
 “Indiana Jones swap”. 
+
+![Slide 9](./images/Python3.009.jpeg)
 
 The Indiana Jones swap is when you take one project and replace it completely
 with another, in one fell swoop, like Indy is about to do here. He brings with
@@ -63,6 +65,8 @@ other for long enough to escape. Your shiny new code is developed in a separate
 branch because the two things can’t co-exist. The whole time we’re doing this we
 know we’ll eventually have to make the swap, and when we do, there will probably
 be booby traps. But what could go wrong? We’re Indiana Jones, after all.
+
+![Slide 10](./images/Python3.010.jpeg)
 
 Just as we expected, the swap is a disaster. We have to merge this giant branch
 into master. There are tons of conflicts. We manually fixing the conflicts and
@@ -78,6 +82,8 @@ Now that we’ve gotten that out of the way, let’s talk about a more sane
 strategy, namely preparatory refactoring. Last year Martin Fowler posted this
 image in an article about preparatory refactoring, along with this quote from
 Jessica Kerr:
+
+![Slide 12](./images/Python3.012.jpeg)
 
 	It’s like I want to go 100 miles east but instead of just traipsing
 	through the woods, I’m going to drive 20 miles north to the highway and
@@ -99,12 +105,10 @@ we understand refactoring.
 
 According to Martin Fowler:
 
-	Refactoring is a disciplined technique for restructuring an existing
+![Refactoring is a disciplined technique for restructuring an existing
 	body of code, altering its internal structure without changing its
 	external behavior. Its heart is a series of small behavior preserving
-	transformations.
-	
-	-- martinfowler.com/refactoring
+	transformations.](./images/Python3.014.jpeg)
 
 Refactoring is disciplined. Refactoring doesn’t change external behavior.
 Refactoring is not feature development. 
@@ -115,18 +119,15 @@ to add, but our existing code structure doesn't immediately support that
 feature, then we can refactor the code into a structure that makes it easy to
 add the feature. Or in the words of Kent Beck:
 
-	for each desired change, make the change easy (warning: this may be
-	hard), then make the easy change
+![for each desired change, make the change easy (warning: this may be
+	hard), then make the easy change](./images/Python3.015.jpeg)
 	
-	-- https://twitter.com/kentbeck/status/250733358307500032
-
 In our case, we're going to do the hard work of making our application
 forward-compatible, so we can then make easy change of running it on Python 3.
 
 So in addition to our goal, we’ven now got a plan.
 
-	1. Refactor for Python 3 compatibility (make the change easy)
-	2. Use Python 3 (Make the easy change)
+![Slide 16](./images/Python3.016.jpeg)
 
 We’re going to do the hard work of making our application forward-compatible,
 so we can then make easy change of running it on Python 3.
@@ -137,22 +138,26 @@ And to make sure the changes we're making are preparing us for Python 3, we want
 to run the same test suite against python 3. Luckily there's a tool that can
 help us out with this.
 
+![Slide 18](./images/Python3.018.jpeg)
+
 Tox is a package that gives us a way to easily run commands in different virtual
 environments. Tox manages the setup of these environments for us before each
 test run.
 
+![Slide 19](./images/Python3.019.jpeg)
+
 With each environment we set up, tox takes the following steps.
 
-	1. First tox will create an virtualenv for the specified tox
-	   environment. Each environment is completely isolated.
-	2. Next tox will install any dependencies we specify, into the
-	   virtualenv.
-	3. Then tox will build and install the application into the virtualenv. 
-	   This assumes that your application has a setup.py and can be
-	   installed with `setup.py sdist`. Don’t worry if this isn’t the case
-	   for your application, there’s a work-around.
-	4. And finally, tox will run each of the commands that you specified in
-	   the virtualenv.
+1. First tox will create an virtualenv for the specified tox
+   environment. Each environment is completely isolated.
+2. Next tox will install any dependencies we specify, into the
+   virtualenv.
+3. Then tox will build and install the application into the virtualenv. 
+   This assumes that your application has a setup.py and can be
+   installed with `setup.py sdist`. Don’t worry if this isn’t the case
+   for your application, there’s a work-around.
+4. And finally, tox will run each of the commands that you specified in
+   the virtualenv.
 
 As I mentioned before, Tox works most easily if you ship your application as a
 standard python package with a setup.py file. Assuming you use pytest and have
@@ -203,8 +208,12 @@ compatibility of the top python packages according to PyPI.  At the time of
 this screenshot, 174 out of 200 (87%) of the most popular packages were
 labelled as compatible with Python 3.
 
+![Slide 23](./images/Python3.023.jpeg)
+
 Python 3 readiness is another, very similar project.  This one reports that 319
 out of 360 (88%) of the most popular packages are ready.
+
+![Slide 24](./images/Python3.024.jpeg)
 
 These tools serve a really important purpose, giving us an overview of the
 Python ecosystem as a whole. But what we’re really concerned with is our
@@ -216,18 +225,22 @@ for any requirements that are not compatible, it will tell you if any of those
 have direct dependencies that would block them from being upgraded. We can use
 this information to determine the path forward for our specific application.
 
+![Slide 25](./images/Python3.025.jpeg)
+
 So what are our options when dependencies aren't compatible?
 
-	- Ignore it: Maybe this is a package that is a backport of a python 3
-	  feature.
-	- Remove it: Maybe it's easier to remove the dependency on this library
-	  than it is to deal with upgrading it.
-	- Replace it: Maybe there's a similar library that is compatible that
-	  could be used instead.
-	- Fix it: Get it fixed upstream! Contribute to open-source.
+- Ignore it: Maybe this is a package that is a backport of a python 3
+  feature.
+- Remove it: Maybe it's easier to remove the dependency on this library
+  than it is to deal with upgrading it.
+- Replace it: Maybe there's a similar library that is compatible that
+  could be used instead.
+- Fix it: Get it fixed upstream! Contribute to open-source.
 
 Now that our dependencies are all sorted out, we can finally get to work on our
 own application code. 
+
+![Slide 27](./images/Python3.027.jpeg)
 
 `__future__` is the first place you should start if you want to write python 3
 compatible code.  PEP 236 introduces a strategy for opting into language
@@ -247,6 +260,8 @@ module named `__future__` which has Feature objects representing each of the
 features.  These objects contain information about the feature, but are
 more-or-less useless at runtime.
 
+![Slide 28](./images/Python3.028.jpeg)
+
 The python 3 features available in python 2.6+ are:
 
 `absolute_import`: PEP 328: Imports: Multi-Line and Absolute/Relative
@@ -259,6 +274,8 @@ python 3. And unlike the compatibility libraries we'll talk about later, these
 imports can change the way our code is compiled.
 
 To take it a little further, we'll look at the six module.
+
+![Slide 29](./images/Python3.029.jpeg)
 
 Six is a Python 2 and 3 compatibility library. It provides utility functions for
 smoothing over the differences between the Python versions with the goal of
@@ -315,10 +332,12 @@ So now we know how to write python 3 compatible code, but this seems like its
 gonna be a lot of manual work. It would be great if we could automate this. The
 only tool I knew of that did anything close to this was 2to3.
 
-	2to3 is a Python program that reads Python 2.x source code and applies
-	a series of fixers to transform it into valid Python 3.x code. The
-	standard library contains a rich set of fixers that will handle almost
-	all code.
+![Slide 33](./images/Python3.033.jpeg)
+
+"2to3 is a Python program that reads Python 2.x source code and applies
+a series of fixers to transform it into valid Python 3.x code. The
+standard library contains a rich set of fixers that will handle almost
+all code."
 
 Although we're not migrating directly to py3 code, could we still use 2to3 to
 show us where we have py3 incompatible code, so we can go replace it with py3
@@ -371,11 +390,11 @@ So yes, we can use 2to3 to find the places where our code is not compatible.
 But the refactoring is still going to be pretty tedious. Wouldn't it be nice if
 there was a tool like 2to6?
 
-python-modernize:
+![Slide 38](./images/Python3.038.jpeg)
 
-	This library is a very thin wrapper around lib2to3 to utilize it to make
-	Python 2 code more modern with the intention of eventually porting it
-	over to Python 3.
+There is.  It's called python-modernize.
+
+![Slide 39](./images/Python3.039.jpeg)
 
 This seems perfect. Let's try it on our example:
 
@@ -400,6 +419,8 @@ As it turns out, modernize did everything we did in our refactor and more.
 
 So in conclusion:
 
+![Slide 42](./images/Python3.042.jpeg)
+
 - Practice preparatory refactoring.
   Don't be Indiana Jones. Refactor for forward-compatibility.
 - Preserve current behaviors, using Tox to testa against both Python 2 & 3.
@@ -407,3 +428,5 @@ So in conclusion:
   Have a plan for incompatible dependencies.
 - Use `__future__` and `six` to write forward-compatible code.
 - Use `python-modernize` to automate the refactoring.
+
+![Slide 43](./images/Python3.043.jpeg)
